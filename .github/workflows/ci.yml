@@ -1,0 +1,52 @@
+name: pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate demo data
+        run: python src/make_demo_data.py
+
+      - name: Clean & validate schema
+        run: python src/clean.py --data data/telco_demo.csv --out data/telco_clean.csv
+
+      - name: A/B test analysis
+        run: python src/abtest_analysis.py
+
+      - name: Train & evaluate models
+        run: python src/ml_churn.py --data data/telco_demo.csv --no-plots
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: outputs
+          path: |
+            results/
+          retention-days: 7
+
+  sql-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate SQL files (15 scripts)
+        run: |
+          count=$(ls sql/*.sql | wc -l)
+          echo "SQL files: $count"
+          test "$count" -eq 15
+          ! grep -L "data" sql/*.sql
