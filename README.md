@@ -167,7 +167,8 @@ telecom-churn-analysis/
 ├── experiments/
 │   └── abtest_design.md     # 实验设计（指标、样本量、决策规则）
 ├── finebi/
-│   └── README.md            # FineBI 看板口径、待修正项与复现步骤
+│   ├── README.md            # 看板口径、待修正项与复现步骤
+│   └── dashboard_spec.md    # 15 个组件的逐条配置手册
 ├── docs/
 │   ├── report.pdf           # 完整分析报告（13 页）
 │   └── figures/             # SQL 结果与 BI 看板截图
