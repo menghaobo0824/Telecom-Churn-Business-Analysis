@@ -20,7 +20,7 @@
 | 2 | **高危组合**：月付 + 电子支票 | 流失率 **53.73%**，占 26.3% 用户却贡献 **53.2%** 流失人数 |
 | 3 | **财务失血**：流失是可对账的现金流 | 每月损失 **139,130.85 元**，年化约 **167 万元**；流失用户月租比留存高 **21.5%** |
 | 4 | **高价值名单**：最贵的流失不在长期合同 | One year 榜首 **8,684.8 元**，高于 Two year 的 7,856 元 |
-| 5 | **头部风险**：营收高度集中 | Top10 客户贡献 **53%** 营收，榜首单人占 5% |
+| 5 | **长尾结构**：营收比 80/20 更平缓 | 80% 营收需 **38.4%** 用户；Top 20% 贡献 **53.6%**；头部单人价值是均值的 **3.8 倍** |
 
 > 一句话：流失不是"人慢慢变少"，而是"新人在头半年成批走掉，走的时候还比留下的人更贵"。
 
@@ -160,8 +160,14 @@ telecom-churn-analysis/
 │   ├── make_demo_data.py    # 生成同构演示数据（无原始数据时跑通流水线）
 │   ├── ml_churn.py          # 三模型训练 / 评估 / 阈值寻优 / 解释
 │   └── abtest_analysis.py   # 功效分析 / z 检验 / CI / 分层
+├── notebooks/               # 逐步分析（前两个已带执行结果，可直接在 GitHub 阅读）
+│   ├── 01_data_overview.ipynb    # 数据概览：缺失、类型、分布、类别不平衡
+│   ├── 02_churn_drivers.ipynb    # 用 pandas 复现报告的五条结论
+│   └── 03_modeling.ipynb         # 特征工程 → 三模型 → 阈值寻优 → 解释
 ├── experiments/
 │   └── abtest_design.md     # 实验设计（指标、样本量、决策规则）
+├── finebi/
+│   └── README.md            # FineBI 看板口径、待修正项与复现步骤
 ├── docs/
 │   ├── report.pdf           # 完整分析报告（13 页）
 │   └── figures/             # SQL 结果与 BI 看板截图
@@ -212,7 +218,7 @@ $env:MYSQL_URL = "mysql+pymysql://root:pass@localhost:3306/churn?charset=utf8mb4
 
 | 流失月租损失 | 营收集中度 |
 |---|---|
-| ![mrr](docs/figures/fig_bi_mrr_loss.png) | ![pareto](docs/figures/fig_bi_pareto_curve.png) |
+| ![mrr](docs/figures/fig_bi_mrr_loss.png) | ![top](docs/figures/fig_bi_high_value_list.png) |
 
 完整分析见 [`docs/report.pdf`](docs/report.pdf)。
 
@@ -235,9 +241,29 @@ $env:MYSQL_URL = "mysql+pymysql://root:pass@localhost:3306/churn?charset=utf8mb4
 - [ ] 增益模型（Uplift Modeling）区分"自然留存"与"被挽留"，避免预算浪费
 - [ ] SQL 增加 data quality 检查脚本（空值率、枚举域、主键唯一性）
 
-## 10. 数据与许可
+## 10. 勘误（重要）
+
+早期版本把 Q12 的 `累计营收占比` 字段读错了单位：该字段已经 `× 100`，
+**`0.53` 表示 0.53%，不是 53%**。按全部 7,043 名用户重算：
+
+| 口径 | 正确值 |
+|---|---|
+| Top 10 名用户占营收 | **0.53%**（单人最高 0.054%） |
+| Top 1% 用户（70 人） | 3.62% |
+| Top 10% 用户（704 人） | **30.79%** |
+| Top 20% 用户（1,408 人） | **53.63%** |
+| 覆盖 80% 营所需用户数 | **2,702 人（38.4%）** |
+
+因此结论从"头部极端集中"修正为"**比经典 80/20 更平缓的长尾结构**"：
+80% 营收需要 38.4% 的用户，而不是 20%。但这不削弱"名单制"建议——
+头部单人价值 8,684.8 元是均值 2,279.7 元的 **3.8 倍**，流失一个头部用户等于流失近 4 个普通用户。
+
+`docs/report.pdf` 为初版报告，其中"发现五"的百分比标题尚未更新；
+正确口径以上表与 `notebooks/02_churn_drivers.ipynb` 为准。
+
+## 11. 数据与许可
 
 - 代码：[MIT License](LICENSE)
 - 数据：**Telco Customer Churn**（IBM Sample Data Sets），版权归数据提供方，
-  仓库不包含原始数据文件，请按 [`data/README.md`](data/README.md) 自行获取
+  仓库内置原始文件仅用于复现，请遵循 [data/README.md](data/README.md) 中的许可说明
 - 报告与图表：个人分析作品，欢迎在注明出处的前提下引用
