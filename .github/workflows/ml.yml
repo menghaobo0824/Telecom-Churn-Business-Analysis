@@ -1,0 +1,41 @@
+name: ml
+
+# 模型训练依赖较重（RandomForest / HistGradientBoosting），不在每次推送时跑，
+# 需要时手动触发：Actions → ml → Run workflow
+on:
+  workflow_dispatch:
+    inputs:
+      data:
+        description: "数据文件路径（默认用演示数据）"
+        required: false
+        default: "data/telco_demo.csv"
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Prepare data
+        run: |
+          if [ ! -f "${{ github.event.inputs.data || 'data/telco_demo.csv' }}" ]; then
+            python src/make_demo_data.py
+          fi
+
+      - name: Train & evaluate
+        run: python src/ml_churn.py --data "${{ github.event.inputs.data || 'data/telco_demo.csv' }}" --out results
+
+      - name: Upload metrics & figures
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-outputs
+          path: results/
+          retention-days: 14

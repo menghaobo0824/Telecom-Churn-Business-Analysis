@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  smoke-test:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,6 +20,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Validate SQL scripts
+        run: |
+          python - <<'PY'
+          import glob
+
+          files = sorted(glob.glob("sql/*.sql"))
+          assert len(files) == 15, f"expect 15 sql files, got {len(files)}: {files}"
+          for f in files:
+              body = open(f, encoding="utf-8").read()
+              assert "data" in body, f"{f} 未引用 data 表"
+              assert ";" in body, f"{f} 缺少语句结束符"
+          print("SQL OK:", len(files), "files")
+          PY
+
       - name: Generate demo data
         run: python src/make_demo_data.py
 
@@ -29,24 +43,9 @@ jobs:
       - name: A/B test analysis
         run: python src/abtest_analysis.py
 
-      - name: Train & evaluate models
-        run: python src/ml_churn.py --data data/telco_demo.csv --no-plots
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: outputs
-          path: |
-            results/
+          name: pipeline-outputs
+          path: results/
           retention-days: 7
-
-  sql-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Validate SQL files (15 scripts)
-        run: |
-          count=$(ls sql/*.sql | wc -l)
-          echo "SQL files: $count"
-          test "$count" -eq 15
-          ! grep -L "data" sql/*.sql

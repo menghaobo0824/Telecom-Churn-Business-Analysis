@@ -1,5 +1,6 @@
 # 数据与产物
 data/*.csv
+!data/telco.csv
 data/*.xlsx
 results/*
 !results/.gitkeep

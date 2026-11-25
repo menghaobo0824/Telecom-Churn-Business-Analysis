@@ -8,6 +8,7 @@
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3%2B-F7931E?logo=scikitlearn&logoColor=white)
 ![SQL](https://img.shields.io/badge/SQL-15%20queries-336791)
 ![License](https://img.shields.io/badge/License-MIT-green)
+![pipeline](https://github.com/menghaobo0824/Telecom-Churn-Business-Analysis/actions/workflows/ci.yml/badge.svg)
 
 ---
 
@@ -164,9 +165,11 @@ telecom-churn-analysis/
 ├── docs/
 │   ├── report.pdf           # 完整分析报告（13 页）
 │   └── figures/             # SQL 结果与 BI 看板截图
-├── data/                    # 数据说明（原始数据不入库）
+├── data/                    # telco.csv（7,043 行原始数据）+ 字段说明
 ├── results/                 # 运行产物（git 忽略）
-└── .github/workflows/ci.yml # 推送即跑的冒烟测试
+└── .github/workflows/
+    ├── ci.yml               # 推送即跑：SQL 校验 + 清洗 + A/B 分析
+    └── ml.yml               # 手动触发：模型训练与图表产出
 ```
 
 ---
@@ -177,8 +180,8 @@ telecom-churn-analysis/
 # 1) 依赖
 pip install -r requirements.txt
 
-# 2) 数据：下载 Telco Churn 到 data/telco.csv（见 data/README.md）
-#    没有数据也可以先生成同构演示数据：
+# 2) 数据：仓库已内置 data/telco.csv（7,043 行 × 21 列），可直接使用
+#    也可以生成同构的合成数据来跑通流水线（不需要真实数据）：
 python src/make_demo_data.py
 
 # 3) 清洗
@@ -220,8 +223,10 @@ $env:MYSQL_URL = "mysql+pymysql://root:pass@localhost:3306/churn?charset=utf8mb4
 - **口径统一**：`Churn` 为 0/1，`AVG(Churn)` 即流失率；金额单位统一为元
 - **小样本防护**：所有交叉分析加 `HAVING COUNT(*) > 100`，避免长尾格子带偏结论
 - **不删样本**：清洗只做回填与封顶（winsorize），保证 7,043 人的口径与报告一致
-- **可复现**：随机种子固定；CI 每次推送都用演示数据跑通全链路
+- **可复现**：随机种子固定；CI 每次推送都用数据跑通全链路
 - **诚实标注**：演示数据 / 模拟实验在文档与代码注释中都明确标注
+- **CI 范围**：推送时校验 15 条 SQL 的结构、清洗管线与 A/B 分析；模型训练耗时较长，
+  改为手动触发（`Actions → ml → Run workflow`），避免每次提交都排队等训练
 
 ## 9. Roadmap
 
