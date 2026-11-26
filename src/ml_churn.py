@@ -62,23 +62,40 @@ def load_data(path: str | None) -> pd.DataFrame:
         ROOT / "data" / "telco_demo.csv",
     ]
     for p in candidates:
-        if p.exists():
+        if not p.exists():
+            continue
+        print(f"[data] reading {p}  ({p.stat().st_size:,} bytes)")
+        try:
             df = pd.read_csv(p)
-            print(f"[data] {p}  shape={df.shape}")
-            break
-    else:
-        raise SystemExit("未找到数据：请先下载 data/telco.csv，或运行 python src/make_demo_data.py")
-    return df
+        except Exception as exc:                      # 便于在 CI 里定位坏文件
+            head = p.read_bytes()[:120]
+            print(f"[data] FAILED {p}: {type(exc).__name__}: {exc}")
+            print(f"[data] first bytes = {head!r}")
+            raise
+        print(f"[data] OK {p}  shape={df.shape}")
+        return df
+    raise SystemExit("未找到数据：请先下载 data/telco.csv，或运行 python src/make_demo_data.py")
 
 
 def build_xy(df: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray]:
     df = df.copy()
     df.columns = [c.strip() for c in df.columns]
-    df["Churn"] = df["Churn"].map({"Yes": 1, "No": 0}) if df["Churn"].dtype == object else df["Churn"]
+
+    # 目标变量：兼容 Yes/No 文本与 0/1 数值
+    # 注意：pandas 3 会把文本列读成 str dtype，用 `dtype == object` 判断会失效
+    if pd.api.types.is_string_dtype(df["Churn"]):
+        df["Churn"] = df["Churn"].map({"Yes": 1, "No": 0})
+    df["Churn"] = df["Churn"].astype(int)
+
     df["TotalCharges"] = pd.to_numeric(
         df["TotalCharges"].astype(str).str.strip().replace("", None), errors="coerce"
     )
     df["TotalCharges"] = df["TotalCharges"].fillna(df["MonthlyCharges"] * df["tenure"])
+
+    # 文本列统一转成 object，避免 sklearn 对 pandas 扩展 dtype 的兼容问题
+    for col in df.columns:
+        if pd.api.types.is_string_dtype(df[col]):
+            df[col] = df[col].astype(object)
 
     # 特征工程：把“服务数量”“客单价偏差”“生命周期阶段”显式化
     service_cols = ["OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport",
