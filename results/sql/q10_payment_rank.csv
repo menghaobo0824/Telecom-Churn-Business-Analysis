@@ -1,0 +1,5 @@
+"PaymentMethod","total_users","churn_rate_pct","danger_rank"
+"Electronic check","1850","53.73","1"
+"Bank transfer (automatic)","589","34.13","2"
+"Credit card (automatic)","543","32.78","3"
+"Mailed check","893","31.58","4"

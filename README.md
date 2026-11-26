@@ -20,7 +20,7 @@
 | 2 | **高危组合**：月付 + 电子支票 | 流失率 **53.73%**，占 26.3% 用户却贡献 **53.2%** 流失人数 |
 | 3 | **财务失血**：流失是可对账的现金流 | 每月损失 **139,130.85 元**，年化约 **167 万元**；流失用户月租比留存高 **21.5%** |
 | 4 | **高价值名单**：最贵的流失不在长期合同 | One year 榜首 **8,684.8 元**，高于 Two year 的 7,856 元 |
-| 5 | **长尾结构**：营收比 80/20 更平缓 | 80% 营收需 **38.4%** 用户；Top 20% 贡献 **53.6%**；头部单人价值是均值的 **3.8 倍** |
+| 5 | **长尾结构**：营收比 80/20 更平缓 | Top 10%（705 人）贡献 **30.83%** 营收；80% 营收需 **38.4%** 用户；头部单人价值是均值的 **3.8 倍** |
 
 > 一句话：流失不是"人慢慢变少"，而是"新人在头半年成批走掉，走的时候还比留下的人更贵"。
 
@@ -173,7 +173,7 @@ telecom-churn-analysis/
 │   ├── report.pdf           # 完整分析报告（13 页）
 │   └── figures/             # SQL 结果与 BI 看板截图
 ├── data/                    # telco.csv（7,043 行原始数据）+ 字段说明
-├── results/                 # 运行产物（git 忽略）
+├── results/sql/             # 15 份查询结果 CSV（可下载复算）
 └── .github/workflows/
     ├── ci.yml               # 推送即跑：SQL 校验 + 清洗 + A/B 分析
     └── ml.yml               # 手动触发：模型训练与图表产出
@@ -213,15 +213,22 @@ $env:MYSQL_URL = "mysql+pymysql://root:pass@localhost:3306/churn?charset=utf8mb4
 
 ## 7. 图表
 
-| 留存悬崖 | 合同 × 支付矩阵 |
-|---|---|
-| ![tenure](docs/figures/fig_bi_tenure_churn_curve.png) | ![matrix](docs/figures/fig_bi_contract_payment_matrix.png) |
+仪表板共 3 页，覆盖 15 条查询里的 9 个可视化结论（其余 6 条为名单，见 `results/sql/`）。
 
-| 流失月租损失 | 营收集中度 |
-|---|---|
-| ![mrr](docs/figures/fig_bi_mrr_loss.png) | ![top](docs/figures/fig_bi_high_value_list.png) |
+**① 大盘总览与用户画像**：7,043 / 1,869 / 26.54%，以及性别与合同结构
 
-完整分析见 [`docs/report.pdf`](docs/report.pdf)。
+![overview](docs/figures/fig_bi_overview.png)
+
+**② 生命周期与高危特征**：0–6 个月 52.94%、支付方式排名、合同 × 支付矩阵
+
+![lifecycle](docs/figures/fig_bi_lifecycle_risk.png)
+
+**③ 财务损失与挽留名单**：每月 139,130.85 元、Top 10% 贡献 30.83%、高危名单
+
+![finance](docs/figures/fig_bi_finance_list.png)
+
+> 15 条查询的**原始输出 CSV** 在 [`results/sql/`](results/sql/)，
+> 每个数字都能下载复核。完整分析见 [`docs/report.pdf`](docs/report.pdf)。
 
 ---
 
@@ -247,20 +254,23 @@ $env:MYSQL_URL = "mysql+pymysql://root:pass@localhost:3306/churn?charset=utf8mb4
 早期版本把 Q12 的 `累计营收占比` 字段读错了单位：该字段已经 `× 100`，
 **`0.53` 表示 0.53%，不是 53%**。按全部 7,043 名用户重算：
 
-| 口径 | 正确值 |
-|---|---|
-| Top 10 名用户占营收 | **0.53%**（单人最高 0.054%） |
-| Top 1% 用户（70 人） | 3.62% |
-| Top 10% 用户（704 人） | **30.79%** |
-| Top 20% 用户（1,408 人） | **53.63%** |
-| 覆盖 80% 营所需用户数 | **2,702 人（38.4%）** |
+| 口径 | 正确值 | 出处 |
+|---|---|---|
+| Top 10 名用户占营收 | **0.53%**（单人最高 0.054%） | `results/sql/q12_pareto_ntile.csv` |
+| Top 1% 用户（70 人） | 3.62% | `notebooks/02_churn_drivers.ipynb` |
+| **Top 10% 用户（705 人）** | **30.83%** | Q12 的 `revenue_share_pct` |
+| **其余 90%（6,338 人）** | **69.17%** | Q12 第二行 |
+| 覆盖 80% 营所需用户数 | **2,702 人（38.4%）** | notebook 累计曲线 |
 
 因此结论从"头部极端集中"修正为"**比经典 80/20 更平缓的长尾结构**"：
 80% 营收需要 38.4% 的用户，而不是 20%。但这不削弱"名单制"建议——
 头部单人价值 8,684.8 元是均值 2,279.7 元的 **3.8 倍**，流失一个头部用户等于流失近 4 个普通用户。
 
+> 口径说明：Q12 用 `NTILE(10)` 分桶，Top 10% = 705 人；
+> notebook 里按"排名前 704 人"计算会得到 30.79%，0.04pp 的差异属正常口径差。
+
 `docs/report.pdf` 为初版报告，其中"发现五"的百分比标题尚未更新；
-正确口径以上表与 `notebooks/02_churn_drivers.ipynb` 为准。
+正确口径以上表、`results/sql/q12_pareto_ntile.csv` 与 `notebooks/02_churn_drivers.ipynb` 为准。
 
 ## 11. 数据与许可
 

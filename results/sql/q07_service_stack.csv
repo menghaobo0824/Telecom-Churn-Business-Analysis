@@ -1,0 +1,6 @@
+"InternetService","OnlineSecurity","TechSupport","total_users","churn_rate_pct"
+"Fiber optic","No","No","1765","55.01"
+"DSL","No","No","788","35.41"
+"Fiber optic","No","Yes","492","29.07"
+"Fiber optic","Yes","No","465","27.96"
+"DSL","No","Yes","453","15.01"

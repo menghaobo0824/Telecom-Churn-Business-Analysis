@@ -4,6 +4,8 @@ data/*.csv
 data/*.xlsx
 results/*
 !results/.gitkeep
+!results/sql/
+!results/sql/*.csv
 *.joblib
 
 # Python

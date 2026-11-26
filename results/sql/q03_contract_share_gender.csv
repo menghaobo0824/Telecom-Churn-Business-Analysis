@@ -1,0 +1,7 @@
+"gender","Contract","churned_users","total_gender_churn","pct_in_gender"
+"Female","Month-to-month","842","939","89.67"
+"Female","One year","75","939","7.99"
+"Female","Two year","22","939","2.34"
+"Male","Month-to-month","813","930","87.42"
+"Male","One year","91","930","9.78"
+"Male","Two year","26","930","2.8"

@@ -1,0 +1,6 @@
+"Contract","PaymentMethod","total_users","churn_rate_pct"
+"Month-to-month","Electronic check","1850","53.73"
+"Month-to-month","Bank transfer (automatic)","589","34.13"
+"Month-to-month","Credit card (automatic)","543","32.78"
+"Month-to-month","Mailed check","893","31.58"
+"One year","Electronic check","347","18.44"
