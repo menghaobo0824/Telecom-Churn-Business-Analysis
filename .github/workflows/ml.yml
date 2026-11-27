@@ -3,8 +3,8 @@ name: ml
 # 模型训练依赖较重（RandomForest / HistGradientBoosting），不随每次推送运行。
 # 需要时手动触发：Actions → ml → Run workflow
 #
-# 说明：为保证可复现，本工作流**固定现场生成演示数据**再训练，
-# 不读取仓库里的任何 CSV，避免文件编码/换行差异导致的解析问题。
+# 数据策略：优先用仓库内的真实数据 data/telco.csv（7,043 行），
+# 如果没有则现场生成同构演示数据，保证任何克隆都能跑通。
 on:
   workflow_dispatch:
 
@@ -22,16 +22,23 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Generate demo data
+      - name: Prepare data
         run: |
-          python src/make_demo_data.py --out data/_ci_demo.csv
-          echo "--- 前 3 行 ---"
-          head -3 data/_ci_demo.csv
-          echo "--- 文件信息 ---"
-          ls -l data/_ci_demo.csv
+          if [ -f data/telco.csv ]; then
+            echo "使用仓库内置真实数据"
+            ls -l data/telco.csv
+          else
+            echo "未找到 telco.csv，生成演示数据"
+            python src/make_demo_data.py --out data/_ci_demo.csv
+            ls -l data/_ci_demo.csv
+          fi
 
       - name: Train & evaluate
-        run: python src/ml_churn.py --data data/_ci_demo.csv --out results
+        run: |
+          DATA=data/telco.csv
+          [ -f "$DATA" ] || DATA=data/_ci_demo.csv
+          echo "training on $DATA"
+          python src/ml_churn.py --data "$DATA" --out results
 
       - name: Upload metrics & figures
         uses: actions/upload-artifact@v4
