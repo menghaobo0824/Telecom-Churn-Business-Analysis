@@ -141,6 +141,8 @@ python src/ml_churn.py --n-jobs 1                             # 受限环境（�
 合同类型（Q05/Q09）、在网时长（Q04）、网络类型（Q07）。两种方法互相印证，
 而不是"模型给个黑箱分数"。
 
+完整的模型卡（用途边界、阈值假设、已知局限、公平性与监控建议）见 [docs/model_card.md](docs/model_card.md)。
+
 ---
 
 ## 4. A/B 实验：把策略从"看起来有用"变成"可验证"
@@ -192,6 +194,7 @@ telecom-churn-analysis/
 │   └── dashboard_spec.md    # 15 个组件的逐条配置手册
 ├── docs/
 │   ├── report.pdf           # 完整分析报告（13 页）
+│   ├── model_card.md        # 模型卡：用途、指标、阈值、局限与公平性
 │   └── figures/             # SQL 结果与 BI 看板截图
 ├── data/                    # telco.csv（7,043 行原始数据）+ 字段说明
 ├── results/sql/             # 15 份查询结果 CSV（可下载复算）

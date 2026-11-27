@@ -21,19 +21,33 @@ data/
 └── README.md
 ```
 
-## 3. 字段说明（分析实际用到的列）
+## 3. 字段字典（21 列全量）
 
-| 字段 | 含义 | 类型 | 用途 |
-|---|---|---|---|
-| customerID | 用户唯一标识 | 文本 | 主键、名单 |
-| tenure | 在网月数 | 整数 | 生命周期分箱 |
-| Contract | 合同类型 | 枚举 | 归因主维度 |
-| PaymentMethod | 支付方式 | 枚举 | 归因主维度 |
-| InternetService | 网络类型 | 枚举 | 服务归因 |
-| OnlineSecurity / TechSupport 等 | 增值服务 | 枚举 | 服务组合 |
-| MonthlyCharges | 当前月租 | 浮点 | 金额量化 |
-| TotalCharges | 历史累计消费 | 浮点 | 客户价值 |
-| Churn | 是否流失 | Yes/No | 目标变量 |
+| # | 字段 | 类型 | 取值 / 说明 | 分析用途 |
+|---|---|---|---|---|
+| 1 | customerID | 文本 | 形如 `7590-VHVEG` | 主键、名单 |
+| 2 | gender | 枚举 | Female / Male | 分组维度（Q03） |
+| 3 | SeniorCitizen | 0/1 | 1 = 老年用户 | 人群归因（Q02） |
+| 4 | Partner | 枚举 | Yes / No 是否有伴侣 | 人群归因（Q02） |
+| 5 | Dependents | 枚举 | Yes / No 是否有家属 | 人群归因 |
+| 6 | tenure | 整数 | 在网月数，0–72 | **生命周期分箱（Q04）** |
+| 7 | PhoneService | 枚举 | Yes / No | 服务组合 |
+| 8 | MultipleLines | 枚举 | Yes / No / No phone service | 服务组合 |
+| 9 | InternetService | 枚举 | DSL / Fiber optic / No | **网络类型归因（Q07）** |
+| 10 | OnlineSecurity | 枚举 | Yes / No / No internet service | 增值服务、模型特征 |
+| 11 | OnlineBackup | 枚举 | 同上 | 增值服务 |
+| 12 | DeviceProtection | 枚举 | 同上 | 增值服务 |
+| 13 | TechSupport | 枚举 | 同上 | 增值服务（Q07） |
+| 14 | StreamingTV | 枚举 | 同上 | 增值服务 |
+| 15 | StreamingMovies | 枚举 | 同上 | 增值服务 |
+| 16 | Contract | 枚举 | Month-to-month / One year / Two year | **核心归因维度（Q05、Q09）** |
+| 17 | PaperlessBilling | 枚举 | Yes / No 是否电子账单 | 模型特征 |
+| 18 | PaymentMethod | 枚举 | Electronic check / Mailed check / Bank transfer (automatic) / Credit card (automatic) | **核心归因维度（Q09、Q10）** |
+| 19 | MonthlyCharges | 浮点 | 当前月租，18.80–118.75 元 | 金额量化（Q11） |
+| 20 | TotalCharges | 浮点（原始为文本） | 历史累计消费，含 11 条空白 | 客户价值（Q12、Q13、Q15） |
+| 21 | Churn | Yes / No | 是否流失，清洗后映射为 0/1 | 目标变量 |
+
+> 早期版本的本表只列了 9 个核心字段，这里补全 21 列，方便读者对照原始 CSV。
 
 ## 4. 数据质量（真实数据实测）
 
