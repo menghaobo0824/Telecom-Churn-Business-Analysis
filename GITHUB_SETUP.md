@@ -217,7 +217,7 @@ GitHub → Settings → Branches → Add rule → 分支名 `main` → 勾选
 
 ### 5. 简历 / 作品集里怎么引用
 
-> 电信用户流失归因与挽留策略分析｜[GitHub](链接)
+> 电信用户流失归因与挽留策略分析｜GitHub: https://github.com/menghaobo0824/Telecom-Churn-Business-Analysis
 > 用 15 条 SQL 完成分层-归因-量化-排序，定位 0–6 个月 52.94% 的留存悬崖与月付+电子支票 53.73% 的高危组合；
 > 用 scikit-learn 建立流失预测并按业务收益寻优阈值；设计 A/B 实验（每组 2,451 人）验证挽留策略。
 
