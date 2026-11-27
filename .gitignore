@@ -6,6 +6,10 @@ results/*
 !results/.gitkeep
 !results/sql/
 !results/sql/*.csv
+!results/ml/
+!results/ml/*.png
+!results/ml/*.csv
+!results/ml/*.json
 *.joblib
 
 # Python
@@ -28,3 +32,4 @@ desktop.ini
 
 # Office 临时文件
 ~$*
+_ml.log

@@ -110,15 +110,36 @@ ORDER BY lifecycle_stage;
 | 解释 | 留出集上的置换重要性（permutation importance），输出 Top-12 特征 |
 
 ```bash
-python src/ml_churn.py                       # 自动找 data/telco.csv
-python src/ml_churn.py --data data/telco.csv --out results
+python src/ml_churn.py                                        # 自动找 data/telco.csv
+python src/ml_churn.py --data data/telco.csv --out results/ml  # 指定输出目录
+python src/ml_churn.py --n-jobs 1                             # 受限环境（不能建多进程管道）用串行
 ```
 
 输出：`metrics.json`、`model_comparison.csv`、`feature_importance.csv`、
 `fig_roc.png`、`fig_pr.png`、`fig_importance.png`、`fig_threshold_profit.png`、`best_model.joblib`。
 
-> 指标不写死在本文件里——请在自己下载的数据上运行后查看 `results/metrics.json`，
-> 避免把"纸面参数"当成结论。
+### 真实数据上的结果（7,043 行，已入库 `results/ml/`）
+
+| 模型 | ROC-AUC | PR-AUC | 阈值 | Precision | Recall | 预期净收益 |
+|---|---|---|---|---|---|---|
+| LogisticRegression | **0.846** | 0.654 | 0.16 | 0.376 | 0.976 | **9.47 万元** |
+| RandomForest | 0.841 | **0.655** | 0.10 | 0.348 | 0.976 | 9.31 万元 |
+| HistGradientBoosting | 0.825 | 0.612 | 0.05 | 0.386 | 0.936 | 9.13 万元 |
+
+> 按 PR-AUC 选出的最优模型是 RandomForest（0.6548），但与 LR（0.6539）几乎持平；
+> 若按**预期净收益**，LR 反而最高（9.47 万 vs 9.31 万）。这说明模型选择指标必须和业务目标对齐——
+> 这也是把阈值放在业务收益上、而不是 F1 上的原因。
+
+| ROC 曲线 | 特征重要性 |
+|---|---|
+| ![roc](results/ml/fig_roc.png) | ![imp](results/ml/fig_importance.png) |
+
+**置换重要性 Top5**：`Contract`（0.051）、`tenure`（0.017）、`InternetService`（0.012）、
+`TotalCharges`（0.008）、`is_new`（0.004）。
+
+有意思的是：**模型自动挑出来的前三个特征，正好对应 SQL 归因的三个结论**——
+合同类型（Q05/Q09）、在网时长（Q04）、网络类型（Q07）。两种方法互相印证，
+而不是"模型给个黑箱分数"。
 
 ---
 
@@ -174,6 +195,7 @@ telecom-churn-analysis/
 │   └── figures/             # SQL 结果与 BI 看板截图
 ├── data/                    # telco.csv（7,043 行原始数据）+ 字段说明
 ├── results/sql/             # 15 份查询结果 CSV（可下载复算）
+├── results/ml/              # 模型指标、特征重要性与 4 张图（真实数据跑出）
 └── .github/workflows/
     ├── ci.yml               # 推送即跑：SQL 校验 + 清洗 + A/B 分析
     └── ml.yml               # 手动触发：模型训练与图表产出

@@ -1,0 +1,64 @@
+{
+  "data_rows": 7043,
+  "churn_rate": 0.2654,
+  "business_assumption": {
+    "arpu": 74.44,
+    "save_rate": 0.35,
+    "offer_cost": 20.0,
+    "remain_months": 12
+  },
+  "best_model": "RandomForest",
+  "models": {
+    "LogisticRegression": {
+      "roc_auc": 0.8458,
+      "pr_auc": 0.6539,
+      "threshold": 0.16,
+      "precision": 0.3759,
+      "recall": 0.9759,
+      "f1": 0.5428,
+      "tp": 365,
+      "fp": 606,
+      "fn": 9,
+      "tn": 429,
+      "predicted_positive_rate": 0.6891,
+      "expected_profit_yuan": 94696.52,
+      "cv_roc_auc": 0.8474,
+      "cv_pr_auc": 0.6601,
+      "cv_f1": 0.6308
+    },
+    "RandomForest": {
+      "roc_auc": 0.8405,
+      "pr_auc": 0.6548,
+      "threshold": 0.1,
+      "precision": 0.3476,
+      "recall": 0.9759,
+      "f1": 0.5126,
+      "tp": 365,
+      "fp": 685,
+      "fn": 9,
+      "tn": 350,
+      "predicted_positive_rate": 0.7452,
+      "expected_profit_yuan": 93116.52,
+      "cv_roc_auc": 0.8443,
+      "cv_pr_auc": 0.6555,
+      "cv_f1": 0.6293
+    },
+    "HistGradientBoosting": {
+      "roc_auc": 0.8254,
+      "pr_auc": 0.6115,
+      "threshold": 0.05,
+      "precision": 0.3859,
+      "recall": 0.9358,
+      "f1": 0.5464,
+      "tp": 350,
+      "fp": 557,
+      "fn": 24,
+      "tn": 478,
+      "predicted_positive_rate": 0.6437,
+      "expected_profit_yuan": 91286.8,
+      "cv_roc_auc": 0.8329,
+      "cv_pr_auc": 0.6255,
+      "cv_f1": 0.5632
+    }
+  }
+}

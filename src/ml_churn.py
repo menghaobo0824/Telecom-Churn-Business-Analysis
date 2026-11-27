@@ -126,13 +126,13 @@ def build_preprocessor(X: pd.DataFrame) -> ColumnTransformer:
     )
 
 
-def make_models() -> dict[str, object]:
+def make_models(n_jobs: int = -1) -> dict[str, object]:
     return {
         "LogisticRegression": LogisticRegression(max_iter=2000, class_weight="balanced",
                                                  random_state=RANDOM_STATE),
         "RandomForest": RandomForestClassifier(
             n_estimators=300, min_samples_leaf=5, max_features="sqrt",
-            class_weight="balanced_subsample", n_jobs=-1, random_state=RANDOM_STATE),
+            class_weight="balanced_subsample", n_jobs=n_jobs, random_state=RANDOM_STATE),
         "HistGradientBoosting": HistGradientBoostingClassifier(
             max_iter=300, learning_rate=0.06, max_leaf_nodes=31,
             l2_regularization=1.0, random_state=RANDOM_STATE),
@@ -174,7 +174,12 @@ def main() -> None:
     ap.add_argument("--data", default=None)
     ap.add_argument("--out", default=str(ROOT / "results"))
     ap.add_argument("--no-plots", action="store_true")
+    ap.add_argument("--n-jobs", type=int, default=-1,
+                    help="并行进程数；受限环境（无法创建管道）用 1")
     args = ap.parse_args()
+
+    # n_jobs=1 时传 None，让 sklearn/joblib 走纯串行，避免受限环境创建多进程管道
+    nj = None if args.n_jobs == 1 else args.n_jobs
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -191,13 +196,13 @@ def main() -> None:
                "f1": "f1", "precision": "precision", "recall": "recall"}
 
     results, fitted = {}, {}
-    for name, model in make_models().items():
+    for name, model in make_models(nj).items():
         pipe = Pipeline([("prep", build_preprocessor(X)), ("clf", model)])
-        cvres = cross_validate(pipe, X_tr, y_tr, cv=cv, scoring=scoring, n_jobs=-1)
+        cvres = cross_validate(pipe, X_tr, y_tr, cv=cv, scoring=scoring, n_jobs=nj)
         pipe.fit(X_tr, y_tr)
 
         # 阈值只在训练集 OOF 预测上寻优，再原样用到留出集，避免信息泄漏
-        oof = cross_val_predict(pipe, X_tr, y_tr, cv=cv, method="predict_proba", n_jobs=-1)[:, 1]
+        oof = cross_val_predict(pipe, X_tr, y_tr, cv=cv, method="predict_proba", n_jobs=nj)[:, 1]
         thr, _ = best_threshold(y_tr, oof)
 
         proba = pipe.predict_proba(X_te)[:, 1]
@@ -217,7 +222,7 @@ def main() -> None:
 
     # 置换重要性
     imp = permutation_importance(best_pipe, X_te, y_te, scoring="roc_auc",
-                                 n_repeats=5, random_state=RANDOM_STATE, n_jobs=-1)
+                                 n_repeats=5, random_state=RANDOM_STATE, n_jobs=nj)
     imp_df = (pd.DataFrame({"feature": X.columns, "importance": imp.importances_mean,
                             "std": imp.importances_std})
               .sort_values("importance", ascending=False))
