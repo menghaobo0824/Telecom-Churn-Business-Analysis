@@ -2,8 +2,8 @@
 
 本目录用于存放 FineBI 工程文件与看板说明。仪表板截图统一放在 `docs/figures/`。
 
-> **逐条 SQL 的组件配置手册见 [`dashboard_spec.md`](dashboard_spec.md)** ——
-> 15 个组件的图表类型、维度/指标、聚合方式、筛选、排序、标签格式都写在里面，照着拖即可。
+> 逐条 SQL 的组件配置手册见 [dashboard_spec.md](dashboard_spec.md)，
+> 15 个组件的图表类型、维度/指标、聚合方式、筛选、排序、标签格式都在里面。
 
 ---
 

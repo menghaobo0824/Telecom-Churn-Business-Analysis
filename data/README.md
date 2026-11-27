@@ -6,7 +6,7 @@
 **Telco Customer Churn**（IBM Sample Data Sets）的原始文件，未做任何修改。
 
 - 来源：IBM 公开样本数据集，常见分发渠道为 Kaggle `blastchar/telco-customer-churn`
-- 许可：**CC BY-NC-ND 4.0** —— 允许原样转载并署名，禁止商用、禁止分发衍生作品
+- 许可：**CC BY-NC-ND 4.0**，允许原样转载并署名，禁止商用和分发衍生作品
 - 因此本仓库只内置**原始文件**；清洗后的数据由 `src/clean.py` 现场生成，不入库
 
 > 如果你的用途涉及商业场景，请自行到上游获取数据并遵守其许可。
